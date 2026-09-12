@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { GeneratorInteractionManager } from './generatorInteraction.js';
 import 'animejs/adapters/three';
 import { engine } from 'animejs';
@@ -232,27 +232,15 @@ function showError(msg, details) {
 }
 
 // 6. Model Loading Pipeline
-const mtlLoader = new MTLLoader();
-mtlLoader.setPath('/assets/models/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+updateProgress(10, 'Loading compressed digital-twin model...');
 
-updateProgress(10, 'Loading optimized cinematic materials...');
-
-mtlLoader.load(
-  'DIGITAL_TWIN.mtl',
-  (materials) => {
-    console.log('✓ DIGITAL_TWIN.mtl loaded successfully.');
-    materials.preload();
-
-    updateProgress(25, 'Loading optimized digital-twin geometry...');
-
-    const objLoader = new OBJLoader();
-    objLoader.setMaterials(materials);
-    objLoader.setPath('/assets/models/');
-
-    objLoader.load(
-      'DIGITAL_TWIN.obj',
-      (object) => {
-        console.log('✓ Full DIGITAL_TWIN scene loaded successfully.');
+gltfLoader.load(
+  '/assets/models/DIGITAL_TWIN.glb',
+  (gltf) => {
+        const object = gltf.scene;
+        console.log('✓ Compressed DIGITAL_TWIN scene loaded successfully.');
         updateProgress(90, 'Verifying model structure & scene graph...');
 
         // Orient model container so CAD Z-up matches Three.js Y-up
@@ -501,26 +489,15 @@ mtlLoader.load(
       },
       (xhr) => {
         if (xhr.lengthComputable && xhr.total > 0) {
-          const percent = Math.min(90, Math.round(25 + (xhr.loaded / xhr.total) * 65));
+          const percent = Math.min(90, Math.round(10 + (xhr.loaded / xhr.total) * 80));
           const loadedMB = (xhr.loaded / (1024 * 1024)).toFixed(1);
           const totalMB = (xhr.total / (1024 * 1024)).toFixed(1);
-          updateProgress(percent, `Loading OBJ model (${loadedMB} MB / ${totalMB} MB)...`);
-        } else {
-          const loadedMB = (xhr.loaded / (1024 * 1024)).toFixed(1);
-          updateProgress(50, `Loading OBJ model (${loadedMB} MB loaded)...`);
+          updateProgress(percent, `Loading compressed model (${loadedMB} MB / ${totalMB} MB)...`);
         }
       },
       (error) => {
-        showError('Failed to load the DIGITAL_TWIN.obj file.', error);
+        showError('Failed to load the compressed DIGITAL_TWIN.glb file.', error);
       }
-    );
-  },
-  (xhr) => {
-    // MTL progress if available
-  },
-  (error) => {
-    showError('Failed to load DIGITAL_TWIN.mtl file. Please check path and syntax.', error);
-  }
 );
 
 // 7. Window Resize Handler
