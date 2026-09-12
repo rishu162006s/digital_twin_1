@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CHP Digital Twin</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- 3D Canvas Container -->
+  <div id="app"></div>
+
+  <!-- UI Overlay -->
+  <div id="ui-container">
+    <aside id="asset-navigator" class="asset-navigator">
+      <div class="navigator-heading">FACILITY ASSETS</div>
+      <details open><summary>CHP Room <span>03</span></summary><div class="asset-list">
+        <button data-asset="EngineCore">Unit 1 · Engine Core</button><button data-asset="BearingSystem">Unit 1 · Bearing System</button><button data-asset="CoolingSystem">Unit 1 · Cooling System</button><button data-asset="GeneratorSystem">Unit 1 · Generator System</button>
+      </div></details>
+      <details open><summary>Water Management <span>08</span></summary><div class="asset-list">
+        <button data-asset="WaterPump">Freshwater Pump</button><button data-asset="ElectricMotor">Pump Motor</button><button data-asset="HighPressureFeedPump">RO Feed Pump</button><button data-asset="ROMembraneBank">RO Membrane Bank</button><button data-asset="PreFilterBank">Pre-filter Bank</button><button data-asset="FeedSuctionPiping">RO Valve Network</button>
+      </div></details>
+      <details><summary>Sewage Management <span>04</span></summary><div class="asset-list">
+        <button data-asset="ProcessDischargeLoop">Process Discharge</button><button data-asset="RejectConcentrateLoop">Reject / Concentrate Filter</button><button data-asset="InstrumentationAndDrain">Drain Instrumentation</button><button data-asset="InstrumentationDrainNetwork">Drain Valve Network</button>
+      </div></details>
+      <details><summary>Data &amp; Telecom Centre <span>09</span></summary><div class="asset-list">
+        <button data-asset="Data+Center.obj">Data Centre Rack</button><button data-asset="Box01">Network Cabinet A</button><button data-asset="Box02">Network Cabinet B</button><button data-asset="GeoSphere02">Satellite Reflector</button><button data-asset="LNB">Satellite LNB</button><button data-asset="AzimuthDrive">Azimuth Drive</button><button data-asset="ElevationDrive">Elevation Drive</button><button data-asset="DriveMotor">Drive Motor</button>
+      </div></details>
+    </aside>
+    <header class="hud-header">
+      <div class="hud-title-row">
+        <div class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></div>
+        <h1 class="hud-title">CHP Digital Twin</h1>
+        <div id="system-health-badge" class="system-health-badge">
+          <span id="system-health-dot" class="system-health-dot"></span>
+          <span id="system-health-text" class="system-health-text">SYSTEM HEALTH 100% &bull; NORMAL</span>
+        </div>
+      </div>
+      <p class="hud-instruction">Hover a subsystem to preview &bull; Click to lock inspection &bull; Drag to orbit</p>
+    </header>
+
+    <div id="selection-chip" class="selection-chip">
+      <span class="selection-pulse"></span>
+      <span id="selection-text">INTERACTIVE MODEL READY</span>
+    </div>
+
+    <div id="hover-label" class="hover-label hidden">
+      <span class="hover-label-kicker">SUBSYSTEM</span>
+      <strong id="hover-label-title">ENGINE CORE</strong>
+      <span id="hover-label-state">CLICK TO INSPECT</span>
+    </div>
+
+    <!-- Floating Top-Right Sensor & Predictive Maintenance Panel -->
+    <div id="sensor-panel" class="sensor-panel hidden">
+      <div class="sensor-header">
+        <h2 id="sensor-title">BEARING SYSTEM</h2>
+        <span id="sensor-subtitle" class="sensor-subtitle">Generator 1</span>
+      </div>
+      <div class="sensor-status">
+        <div class="status-badge">
+          <span id="status-dot" class="status-dot"></span>
+          <span id="sensor-status-text" class="status-text">NORMAL</span>
+        </div>
+        <div class="live-indicator">
+          <span class="live-dot"></span>
+          <span class="live-text">LIVE</span>
+        </div>
+      </div>
+      <div id="sensor-metrics" class="sensor-metrics">
+        <!-- Dynamically populated rows -->
+      </div>
+      
+      <!-- Phase 6 Predictive Maintenance Intelligence Section -->
+      <div id="predictive-section" class="predictive-section">
+        <div class="health-score-container">
+          <div class="health-label-row">
+            <span class="health-title">HEALTH SCORE</span>
+            <span id="health-score-val" class="health-score-val">100%</span>
+          </div>
+          <div class="health-bar-bg">
+            <div id="health-bar-fill" class="health-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+        <div class="condition-row">
+          <span class="condition-label">CONDITION</span>
+          <span id="condition-state-val" class="condition-state-val">HEALTHY</span>
+        </div>
+        <div class="rul-row">
+          <span id="rul-val" class="rul-val">&gt; 2500 hrs (SIMULATED RUL)</span>
+        </div>
+        <div class="insight-box">
+          <div class="insight-title">MAINTENANCE INSIGHT</div>
+          <p id="insight-text" class="insight-text">No action required.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Bottom-Left Component Description Card -->
+    <div id="description-card" class="description-card hidden">
+      <div class="description-header">
+        <h3 id="description-title">BEARING SYSTEM</h3>
+        <span id="description-subtitle" class="description-subtitle">Generator 1</span>
+      </div>
+      <p id="description-text" class="description-text">
+        Supports rotating shafts and reduces friction, enabling smooth and reliable mechanical operation.
+      </p>
+    </div>
+
+    <div class="mode-key" aria-label="Inspection legend">
+      <span><i class="key-dot key-live"></i> LIVE 3D</span>
+      <span><i class="key-dot key-blueprint"></i> BLUEPRINT CONTEXT</span>
+      <kbd>ESC</kbd><em>clear selection</em>
+    </div>
+    <div id="controller-hint" class="controller-hint" aria-live="polite">CONTROLLER: connect to begin</div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="overlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <h2 id="loading-title">Loading 3D Digital Twin</h2>
+      <p id="loading-status">Initializing 3D viewer...</p>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Overlay -->
+  <div id="error-overlay" class="overlay hidden">
+    <div class="error-box">
+      <h2>Model Loading Error</h2>
+      <p id="error-message">An error occurred while loading the 3D model.</p>
+      <p class="error-hint">Check browser console for detailed diagnostic logs.</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
